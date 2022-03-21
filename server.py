@@ -1,4 +1,4 @@
-from flask import Flask, request
+from flask import Flask, request, jsonify
 import json
 import pickle
 
@@ -22,9 +22,8 @@ def post_route():
         out = request.get_json()
         out = data_obj.transform_posted_data(out)
         y_pred = model_obj.model.predict(out)
-        show_ind = y_pred.mean(axis=0).argsort()[-3:]
+        show_ind = y_pred.mean(axis=0).argsort()[-3::-1]
         show_id = list(data_obj.show_id[show_ind])
-        # print('Data Received: "{data}"'.format(data=data))
-        return {"predicted_shows": show_id}
-
-app.run()#(host="localhost", port=8080)
+        return jsonify({"predicted_shows": show_id})
+if __name__=="__main__":
+    app.run(host="0.0.0.0")

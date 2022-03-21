@@ -5,7 +5,9 @@ WORKDIR ./
 COPY ./ ./
 RUN pip3 install -r requirements.txt
 #CMD ["/bin/echo", "\nTraining the model on the training data and measuring its accuracy with validation data ...\n"]
-CMD ["python3", "main.py"]
+EXPOSE 5000
+RUN python3 main.py
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "server:app"]
 #CMD ["echo", "\nRunning server for receiving queries ...\n"]
 #CMD ["python3", "server.py", "&"]
 #CMD ["sleep 20"]

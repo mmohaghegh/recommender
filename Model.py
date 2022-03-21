@@ -3,11 +3,12 @@
 import json
 import numpy as np
 import pandas as pd
-import tensorflow as tf
-from tensorflow import keras
+# import tensorflow as tf
+# from tensorflow import keras
+import keras
 from keras import layers
+from keras import backend as K
 from sklearn.model_selection import train_test_split
-from tensorflow.keras import backend as K
 from helper import *
 
 class data():
@@ -207,11 +208,11 @@ class model():
             hidden_layers.append(layers.Dense(num_units[h_l],
                                               activation=act_func[h_l]))
         output_layer = layers.Dense(self.data.show_id.size, activation="softmax")
-        self.model = tf.keras.Sequential([input_layer] + \
+        self.model = keras.Sequential([input_layer] + \
                                          hidden_layers + \
                                          [output_layer])
         self.model.compile(optimizer="adam",
-                           loss=tf.keras.losses.sparse_categorical_crossentropy,
+                           loss=keras.losses.sparse_categorical_crossentropy,
                            metrics=["accuracy"])
     
     def fit(self):
