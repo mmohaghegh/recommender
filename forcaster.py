@@ -1,17 +1,14 @@
-#!/usr/bin/env python3
-
+import os
 import json
 import numpy as np
 import pandas as pd
-# import tensorflow as tf
-# from tensorflow import keras
 import keras
 from keras import layers
 from keras import backend as K
 from sklearn.model_selection import train_test_split
 from helper import *
 
-class data():
+class Data():
     """
     Class for preprocessing of the data.
     
@@ -37,22 +34,28 @@ class data():
             
     """
     
-    def __init__(self, param_file):
-        self._orig_data = pd.read_parquet("adition_forecaster_application_data"+\
-                                          ".snappy.parquet", engine="fastparquet")
+    def __init__(self):
+        self._read_params()
+        self._orig_data = pd.read_parquet(os.path.join(self.par["data"]["path"],
+                                                       self.par["data"]["fl_name"]),
+                                          engine="fastparquet")
         self._features = []
         self._get_targetfeatures()
         
+    def _read_params(self):
+        with open(os.path.join("./", "parameters.json")) as fl:
+            self.par = json.load(fl)
+        
     def _get_targetfeatures(self):
         """
-        extract target and features from the dataset
+        Extract target and features from the dataset
         """
         self._orig_target = self._orig_data.pop("show_id")
         self._orig_features = self._orig_data
         
     def transform_features(self, feat):
         """
-        preprocessing feature 'feat'
+        Preprocess the feature 'feat'
         
         Parameter
         ---------
@@ -79,7 +82,7 @@ class data():
             
     def _transform_age(self, age):
         """
-        transform the feature 'user_age'
+        Transform the feature 'user_age'
         
         Parameter
         ---------
@@ -113,7 +116,7 @@ class data():
         
     def transform_posted_data(self, inp):
         """
-        transform the posted feature data
+        Transform the posted feature data
         
         Parameter
         ---------
@@ -138,7 +141,7 @@ class data():
         
     def _transform_languages(self, languages):
         """
-        transform the feature 'user_languages'
+        Transform the feature 'user_languages'
         
         Parameter
         ---------
@@ -155,13 +158,13 @@ class data():
         
     def concat_features(self):
         """
-        collect all features
+        Collect all features
         """
         self._features = np.hstack(self._features)
         
     def transform_target(self):
         """
-        transform target vector 'show_id'
+        Transform target vector 'show_id'
         
         Parameter
         ---------
@@ -176,7 +179,7 @@ class data():
         
     def split_train_val_test(self, test_prop=0.2, val_prop=0.2):
         """
-        split the entire data set to training, validation and testing sets
+        Split the entire data set to training, validation and testing sets
         
         Parameters:
             test_prop: float
@@ -193,13 +196,45 @@ class data():
                                                                               self._target,
                                                                               test_size=val_prop)
         
-class model():
+class Model():
+    """
+    Class for building a model of the processed data.
     
+    attributes:
+        model: keras.model
+        data: instance of 'Data' class
+        
+    methods:
+        setup:
+            setup the model in terms of the number of layers, number of units in
+            each layer and their activation functions.
+        fit:
+            fit the model on the processed data.
+        predict:
+            predict the label of queried or, in general, unlabeled data.
+    """
     def __init__(self, data):
         self.model = None
         self.data = data
     
     def setup(self, num_hid_lay=1, num_units=100, act_func="relu"):
+        """
+        Setup the model
+        
+        Parameters
+        ---------
+            num_hid_lay: int
+                number of hidden layers (default=1).
+            num_units: int (or list of int)
+                how many units each layer has. When num_hid_lay>1, num_units
+                can be list, but has to have a length of num_hid_lay.
+                The list indicates the num_units for each hidden layer.
+            act_func: str (or list of str)
+                what activation function units each layer has. When 
+                num_hid_lay>1, num_units can be list, but has to have
+                a length of num_hid_lay. The list indicates the act_func
+                for units of each hidden layer.
+        """
         hidden_layers = []
         input_layer = keras.Input(shape=(self.data.X_train.shape[1],))
         num_units = expand_to_list(num_units, num_hid_lay)
@@ -215,10 +250,25 @@ class model():
                            loss=keras.losses.sparse_categorical_crossentropy,
                            metrics=["accuracy"])
     
-    def fit(self):
+    def fit(self, epochs):
+        """
+        Fit the model on the data (in the instance of Data class).
+        
+        Parameter
+        ---------
+        epochs: int
+            number of epochs
+        """
         self.model.fit(self.data.X_train, self.data.y_train,
                        validation_data=(self.data.X_val, self.data.y_val),
-                       epochs=10, batch_size=100)
+                       epochs=epochs, batch_size=100)
     
     def predict(self, X, y):
+        """
+        Predict the label of queried or, in general, unlabeled data.
+        
+        Return
+        ------
+            The predicted labels
+        """
         return self.model.predict(X, y)

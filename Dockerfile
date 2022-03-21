@@ -8,9 +8,3 @@ RUN pip3 install -r requirements.txt
 EXPOSE 5000
 RUN python3 main.py
 CMD ["gunicorn", "--bind", "0.0.0.0:5000", "server:app"]
-#CMD ["echo", "\nRunning server for receiving queries ...\n"]
-#CMD ["python3", "server.py", "&"]
-#CMD ["sleep 20"]
-#CMD ["echo", "\nSending the query to the server ...\n"]
-#RUN chmod u+x request.sh
-#CMD "./request.sh"
