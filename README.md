@@ -30,3 +30,5 @@ All you need is a Docker Engine. For details concerning how install Docker visit
 `requirements.txt` contains the python packages required for this repository.
 
 `parameters.json` contains some of the model hyperparameters that was achieved using `model_selection.py`.
+
+`model_selection.pdf` illustrates accuracies of models with different complexities.
