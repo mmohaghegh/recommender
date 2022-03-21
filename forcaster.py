@@ -88,9 +88,6 @@ class Data():
         ---------
         age: numpy.ndarray
         """
-        # age = self.orig_features.user_age.values
-        # self.age = {"min": age.min(),
-        #             "max": age.max()}
         age = (age - self._age["min"])/(self._age["max"] - self._age["min"])
         return age.reshape(-1, 1)
         # self.features.append(age.reshape(-1, 1))
@@ -103,16 +100,11 @@ class Data():
         ---------
         interests: numpy.ndarray
         """
-        # interests = self.orig_features.user_interests.values
-        # hobby_uniq, kind_uniq = get_uniques_from_dict(interests)
         hobby, kind = [], []
         for _dict in interests:
             hobby.append(to_indicator(list(_dict.keys()), self._interests["hobby"]))
             kind.append(to_indicator(list(_dict.values()), self._interests["kind"]))
         return np.array(hobby), np.array(kind)
-        # self.features.append(hobby)
-        # self.features.append(kind)
-        # self.interests = {"hobby": hobby_uniq, "kind": kind_uniq}
         
     def transform_posted_data(self, inp):
         """
@@ -147,14 +139,10 @@ class Data():
         ---------
         languages: numpy.ndarray
         """ 
-        # languages = self.orig_features.user_languages.values
-        # lang_uniq = np.unique(np.concatenate(languages))
         lang = []
         for _list in languages:
             lang.append(to_indicator(_list, self._languages))
         return np.array(lang)
-        # self.features.append(lang)
-        # self.languages = lang_uniq
         
     def concat_features(self):
         """
@@ -191,11 +179,13 @@ class Data():
         """
         self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(self._features,
                                                                                 self._target,
-                                                                                test_size=test_prop)
+                                                                                test_size=test_prop,
+                                                                                random_state=0)
         self.X_train, self.X_val, self.y_train, self.y_val = train_test_split(self._features,
                                                                               self._target,
-                                                                              test_size=val_prop)
-        
+                                                                              test_size=val_prop,
+                                                                              random_state=0)
+
 class Model():
     """
     Class for building a model of the processed data.
@@ -217,7 +207,7 @@ class Model():
         self.model = None
         self.data = data
     
-    def setup(self, num_hid_lay=1, num_units=100, act_func="relu"):
+    def setup(self, num_hid_lay=None, num_units=None, act_func="relu"):
         """
         Setup the model
         
@@ -235,6 +225,10 @@ class Model():
                 a length of num_hid_lay. The list indicates the act_func
                 for units of each hidden layer.
         """
+        if num_hid_lay is None:
+            num_hid_lay = self.data.par["hyperparams"]["n_layers"]
+        if num_units is None:
+            num_units = self.data.par["hyperparams"]["n_units"]
         hidden_layers = []
         input_layer = keras.Input(shape=(self.data.X_train.shape[1],))
         num_units = expand_to_list(num_units, num_hid_lay)
@@ -260,7 +254,7 @@ class Model():
             number of epochs
         """
         self.model.fit(self.data.X_train, self.data.y_train,
-                       validation_data=(self.data.X_val, self.data.y_val),
+                       validation_data=(self.data.X_test, self.data.y_test),
                        epochs=epochs, batch_size=100)
     
     def predict(self, X, y):

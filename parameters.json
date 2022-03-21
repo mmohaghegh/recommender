@@ -1,3 +1,4 @@
 {"data":{"path": "./",
          "fl_name": "adition_forecaster_application_data.snappy.parquet"},
-"do_selection": true}
+"hyperparams": {"n_layers": 1,
+                "n_units": 100}}

@@ -44,9 +44,9 @@ for c_ind in range(n_l_comb.size):
 acc = acc.reshape(num_layers.size, num_units.size, order='F')
 fig, ax = plt.subplots()    
 for l_i, lay in enumerate(num_layers):
-    ax.plot(num_layers, acc[l_i], label="n_layer(s)={}".format(lay))
+    ax.plot(num_units, acc[l_i], '-o', label="n_layer(s)={}".format(lay))
 
-ax.set_xlabel("accuracy")
+ax.set_ylabel("accuracy")
 ax.set_xlabel("number of units")
 ax.legend()
 fig.savefig("model_selection.pdf")
